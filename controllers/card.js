@@ -2,23 +2,16 @@ const Card = require('../models/card');
 const {
   NOT_FOUND_ERROR_CODE,
   DEFAULT_ERROR_CODE,
+  INCORRECT_DATA_ERROR_CODE,
 } = require('../utils/constants');
 
 const USER_REF = [{ path: 'likes', model: 'user' }];
 
 module.exports.getCards = async (req, res) => {
   try {
-    const cards = await Card.find({}).populate(USER_REF);
-
-    if (!cards) {
-      return res.status(NOT_FOUND_ERROR_CODE).json({
-        message: 'Карточки не найдены',
-      });
-    }
-
+    const cards = await Card.find({});
     res.send(cards);
   } catch (e) {
-    console.log(e);
     res.status(DEFAULT_ERROR_CODE).json({
       message: 'Не удалось получить карточки',
     });
@@ -27,7 +20,6 @@ module.exports.getCards = async (req, res) => {
 
 module.exports.createCard = async (req, res) => {
   try {
-    console.log(req.user._id);
     const { name, link } = req.body;
     const card = await Card.create({ name, link, owner: req.user._id });
 
@@ -35,7 +27,11 @@ module.exports.createCard = async (req, res) => {
       message: 'Карточка успешно создана',
     });
   } catch (e) {
-    console.log(e);
+    if (e.name === 'ValidationError') {
+      res.status(INCORRECT_DATA_ERROR_CODE).json({
+        message: 'Переданы не валидные данные'
+      });
+    }
     res.status(DEFAULT_ERROR_CODE).json({
       message: 'Не удалось создать карточку',
     });
@@ -55,7 +51,11 @@ module.exports.deleteCard = async (req, res) => {
       message: 'Карточка удалена',
     });
   } catch (e) {
-    console.log(e);
+    if (e.name === 'CastError') {
+      res.status(INCORRECT_DATA_ERROR_CODE).json({
+        message: 'Переданы не валидные данные'
+      });
+    }
     res.status(DEFAULT_ERROR_CODE).json({
       message: 'Не удалось удалить карточку',
     });
@@ -65,22 +65,21 @@ module.exports.deleteCard = async (req, res) => {
 const handleCardLike = async (req, res, options) => {
   try {
     const action = options.addLike ? '$addToSet' : '$pull';
-    const card = await Card.findById(req.params.cardId);
-
-    if (!card) {
-      return res.status(NOT_FOUND_ERROR_CODE).json({
-        message: 'Карточка не найдена',
-      });
-    }
 
     const updatedCard = await Card.findOneAndUpdate(
       req.params.cardId,
       { [action]: { likes: req.user._id } },
       { new: true },
     ).populate(USER_REF);
+
+    if (!updatedCard) {
+      return res.status(NOT_FOUND_ERROR_CODE).json({
+        message: 'Карточка не найдена',
+      });
+    }
+
     res.send(updatedCard);
   } catch (e) {
-    console.log(e);
     res.status(DEFAULT_ERROR_CODE).json({
       message: 'Не удалось изменить карточку',
     });
