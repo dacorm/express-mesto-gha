@@ -33,6 +33,7 @@ module.exports.getUser = async (req, res) => {
       res.status(INCORRECT_DATA_ERROR_CODE).json({
         message: 'Переданы не валидные данные'
       });
+      return;
     }
     res.status(DEFAULT_ERROR_CODE).json({
       message: 'Не удалось найти пользователя',
@@ -54,6 +55,7 @@ module.exports.createUser = async (req, res) => {
       res.status(INCORRECT_DATA_ERROR_CODE).json({
         message: 'Переданы не валидные данные'
       });
+      return;
     }
     res.status(DEFAULT_ERROR_CODE).json({
       message: 'Не удалось создать пользователя',
@@ -78,6 +80,7 @@ module.exports.updateUserName = async (req, res) => {
       res.status(INCORRECT_DATA_ERROR_CODE).json({
         message: 'Переданы не валидные данные'
       });
+      return;
     }
     res.status(DEFAULT_ERROR_CODE).json({
       message: 'Не удалось изменить пользователя',
@@ -102,6 +105,7 @@ module.exports.updateUserAvatar = async (req, res) => {
       res.status(INCORRECT_DATA_ERROR_CODE).json({
         message: 'Переданы не валидные данные'
       });
+      return;
     }
     res.status(DEFAULT_ERROR_CODE).json({
       message: 'Не удалось изменить пользователя',

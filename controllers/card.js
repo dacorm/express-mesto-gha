@@ -31,6 +31,7 @@ module.exports.createCard = async (req, res) => {
       res.status(INCORRECT_DATA_ERROR_CODE).json({
         message: 'Переданы не валидные данные'
       });
+      return;
     }
     res.status(DEFAULT_ERROR_CODE).json({
       message: 'Не удалось создать карточку',
@@ -55,6 +56,7 @@ module.exports.deleteCard = async (req, res) => {
       res.status(INCORRECT_DATA_ERROR_CODE).json({
         message: 'Переданы не валидные данные'
       });
+      return;
     }
     res.status(DEFAULT_ERROR_CODE).json({
       message: 'Не удалось удалить карточку',
@@ -80,6 +82,12 @@ const handleCardLike = async (req, res, options) => {
 
     res.send(updatedCard);
   } catch (e) {
+    if (e.name === 'CastError') {
+      res.status(INCORRECT_DATA_ERROR_CODE).json({
+        message: 'Переданы не валидные данные'
+      });
+      return;
+    }
     res.status(DEFAULT_ERROR_CODE).json({
       message: 'Не удалось изменить карточку',
     });
