@@ -1,8 +1,10 @@
 const User = require('../models/user');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const {
   NOT_FOUND_ERROR_CODE,
   DEFAULT_ERROR_CODE,
-  INCORRECT_DATA_ERROR_CODE
+  INCORRECT_DATA_ERROR_CODE, JWT_SECRET
 } = require('../utils/constants');
 
 module.exports.getUsers = async (req, res) => {
@@ -45,8 +47,15 @@ module.exports.getUser = async (req, res) => {
 
 module.exports.createUser = async (req, res) => {
   try {
-    const { name, about, avatar } = req.body;
-    const user = User.create({ name, about, avatar });
+    const { name, about, avatar, email, password } = req.body;
+    const hash = await bcrypt.hash(password, 10);
+    const user = User.create({
+      name,
+      about,
+      avatar,
+      email,
+      password: hash
+    });
     res.send({
       message: 'Пользователь успешно создан',
     });
@@ -62,6 +71,25 @@ module.exports.createUser = async (req, res) => {
     });
   }
 };
+
+module.exports.login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne(email, password);
+    const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
+    res.send(token);
+  } catch (e) {
+    if (e.name === 'ValidationError') {
+      res.status(INCORRECT_DATA_ERROR_CODE).json({
+        message: 'Переданы не валидные данные'
+      });
+      return;
+    }
+    res.status(DEFAULT_ERROR_CODE).json({
+      message: 'Не удалось войти в систему',
+    });
+  }
+}
 
 module.exports.updateUserName = async (req, res) => {
   try {
