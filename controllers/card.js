@@ -6,7 +6,7 @@ const {
 } = require('../utils/constants');
 const BadRequestError = require('../utils/errors/badRequestError');
 const NotFoundError = require('../utils/errors/notFoundError');
-const ForbiddenError = require("../utils/errors/forbiddenError");
+const ForbiddenError = require('../utils/errors/forbiddenError');
 
 const USER_REF = [{ path: 'likes', model: 'user' }];
 
@@ -40,10 +40,10 @@ module.exports.deleteCard = async (req, res, next) => {
   try {
     const card = await Card.findById(req.params.cardId);
     if (!card) {
-      return new NotFoundError('Карточка не найдена')
+      return new NotFoundError('Карточка не найдена');
     }
     if (card.owner.toString() !== req.params.cardId) {
-      return new ForbiddenError('Нельзя удалять чужие карточки')
+      return new ForbiddenError('Нельзя удалять чужие карточки');
     }
     const cardDelete = await Card.findByIdAndRemove(req.params.cardId);
     res.send({
@@ -69,7 +69,7 @@ const handleCardLike = async (req, res, next, options) => {
     ).populate(USER_REF);
 
     if (!updatedCard) {
-      return new NotFoundError('Карточка не найдена')
+      return new NotFoundError('Карточка не найдена');
     }
 
     res.send(updatedCard);
