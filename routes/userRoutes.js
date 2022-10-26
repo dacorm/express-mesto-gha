@@ -5,7 +5,7 @@ const {
   getUser,
   updateUserName,
   updateUserAvatar,
-  getMe
+  getMe,
 } = require('../controllers/user');
 const { validateUserId, validateUserInfo, validateAvatar } = require('../utils/validators/userValidator');
 

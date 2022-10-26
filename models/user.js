@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
-const UnauthorizedError = require("../utils/errors/unauthorizedError");
-const bcrypt = require("bcrypt");
-const {DEFAULT_ERROR_CODE} = require("../utils/constants");
+const bcrypt = require('bcrypt');
+const UnauthorizedError = require('../utils/errors/unauthorizedError');
+const { DEFAULT_ERROR_CODE } = require('../utils/constants');
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -54,7 +54,7 @@ userSchema.statics.checkUser = async function (email, password) {
     }
 
     if (user && match) {
-      return user
+      return user;
     }
   } catch (e) {
     console.log(e);

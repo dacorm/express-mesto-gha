@@ -1,21 +1,21 @@
-const User = require('../models/user');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const User = require('../models/user');
 const {
   NOT_FOUND_ERROR_CODE,
   DEFAULT_ERROR_CODE,
-  INCORRECT_DATA_ERROR_CODE, JWT_SECRET
+  INCORRECT_DATA_ERROR_CODE, JWT_SECRET,
 } = require('../utils/constants');
-const BadRequestError = require("../utils/errors/badRequestError");
-const NotFoundError = require("../utils/errors/notFoundError");
-const ConflictError = require("../utils/errors/conflictError");
+const BadRequestError = require('../utils/errors/badRequestError');
+const NotFoundError = require('../utils/errors/notFoundError');
+const ConflictError = require('../utils/errors/conflictError');
 
 module.exports.getUsers = async (req, res, next) => {
   try {
     const user = await User.find({});
     res.send(user);
   } catch (e) {
-    next(e)
+    next(e);
   }
 };
 
@@ -40,18 +40,18 @@ module.exports.getUser = async (req, res, next) => {
   }
 };
 
-
-
 module.exports.createUser = async (req, res, next) => {
   try {
-    const { name, about, avatar, email, password } = req.body;
+    const {
+      name, about, avatar, email, password,
+    } = req.body;
     const hash = await bcrypt.hash(password, 10);
     const user = User.create({
       name,
       about,
       avatar,
       email,
-      password: hash
+      password: hash,
     });
     res.send({
       message: 'Пользователь успешно создан',
@@ -78,7 +78,7 @@ module.exports.login = async (req, res, next) => {
     }
     next(e);
   }
-}
+};
 
 module.exports.updateUserName = async (req, res, next) => {
   try {

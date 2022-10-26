@@ -4,8 +4,8 @@ const {
   DEFAULT_ERROR_CODE,
   INCORRECT_DATA_ERROR_CODE,
 } = require('../utils/constants');
-const BadRequestError = require("../utils/errors/badRequestError");
-const NotFoundError = require("../utils/errors/notFoundError");
+const BadRequestError = require('../utils/errors/badRequestError');
+const NotFoundError = require('../utils/errors/notFoundError');
 
 const USER_REF = [{ path: 'likes', model: 'user' }];
 
