@@ -6,19 +6,20 @@ const {
   DEFAULT_ERROR_CODE,
   INCORRECT_DATA_ERROR_CODE, JWT_SECRET
 } = require('../utils/constants');
+const BadRequestError = require("../utils/errors/badRequestError");
+const NotFoundError = require("../utils/errors/notFoundError");
+const ConflictError = require("../utils/errors/conflictError");
 
-module.exports.getUsers = async (req, res) => {
+module.exports.getUsers = async (req, res, next) => {
   try {
     const user = await User.find({});
     res.send(user);
   } catch (e) {
-    res.status(DEFAULT_ERROR_CODE).json({
-      message: 'Не удалось получить пользователей',
-    });
+    next(e)
   }
 };
 
-module.exports.getUser = async (req, res) => {
+module.exports.getUser = async (req, res, next) => {
   try {
     const { id } = req.params.id;
     const user = await User.findById(id);
@@ -32,20 +33,16 @@ module.exports.getUser = async (req, res) => {
     res.send(user);
   } catch (e) {
     if (e.name === 'CastError') {
-      res.status(INCORRECT_DATA_ERROR_CODE).json({
-        message: 'Переданы не валидные данные'
-      });
-      return;
+      next(new BadRequestError('Переданы не валидные данные'));
+    } else {
+      next(e);
     }
-    res.status(DEFAULT_ERROR_CODE).json({
-      message: 'Не удалось найти пользователя',
-    });
   }
 };
 
 
 
-module.exports.createUser = async (req, res) => {
+module.exports.createUser = async (req, res, next) => {
   try {
     const { name, about, avatar, email, password } = req.body;
     const hash = await bcrypt.hash(password, 10);
@@ -60,38 +57,30 @@ module.exports.createUser = async (req, res) => {
       message: 'Пользователь успешно создан',
     });
   } catch (e) {
-    if (e.name === 'ValidationError') {
-      res.status(INCORRECT_DATA_ERROR_CODE).json({
-        message: 'Переданы не валидные данные'
-      });
-      return;
+    if (e.code === 11000) {
+      next(new ConflictError('Пользователь с данным email уже зарегистрирован'));
+    } else if (e.name === 'CastError') {
+      next(new BadRequestError('Переданы не валидные данные'));
     }
-    res.status(DEFAULT_ERROR_CODE).json({
-      message: 'Не удалось создать пользователя',
-    });
+    next(e);
   }
 };
 
-module.exports.login = async (req, res) => {
+module.exports.login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne(email, password);
+    const user = await User.checkUser(email, password);
     const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
     res.send(token);
   } catch (e) {
     if (e.name === 'ValidationError') {
-      res.status(INCORRECT_DATA_ERROR_CODE).json({
-        message: 'Переданы не валидные данные'
-      });
-      return;
+      next(new BadRequestError(e.message));
     }
-    res.status(DEFAULT_ERROR_CODE).json({
-      message: 'Не удалось войти в систему',
-    });
+    next(e);
   }
 }
 
-module.exports.updateUserName = async (req, res) => {
+module.exports.updateUserName = async (req, res, next) => {
   try {
     const { name, about } = req.body;
     const updatedUser = await User.findByIdAndUpdate(
@@ -105,18 +94,13 @@ module.exports.updateUserName = async (req, res) => {
     res.send(updatedUser);
   } catch (e) {
     if (e.name === 'ValidationError') {
-      res.status(INCORRECT_DATA_ERROR_CODE).json({
-        message: 'Переданы не валидные данные'
-      });
-      return;
+      next(new BadRequestError(e.message));
     }
-    res.status(DEFAULT_ERROR_CODE).json({
-      message: 'Не удалось изменить пользователя',
-    });
+    next(e);
   }
 };
 
-module.exports.updateUserAvatar = async (req, res) => {
+module.exports.updateUserAvatar = async (req, res, next) => {
   try {
     const { avatar } = req.body;
     const updatedUser = await User.findByIdAndUpdate(
@@ -130,13 +114,18 @@ module.exports.updateUserAvatar = async (req, res) => {
     res.send(updatedUser);
   } catch (e) {
     if (e.name === 'ValidationError') {
-      res.status(INCORRECT_DATA_ERROR_CODE).json({
-        message: 'Переданы не валидные данные'
-      });
-      return;
+      next(new BadRequestError(e.message));
     }
-    res.status(DEFAULT_ERROR_CODE).json({
-      message: 'Не удалось изменить пользователя',
-    });
+    next(e);
+  }
+};
+
+module.exports.getMe = async (req, res, next) => {
+  try {
+    const user = await User.findOne({ _id: req.user._id });
+
+    res.send(user);
+  } catch (e) {
+    return next(e);
   }
 };
