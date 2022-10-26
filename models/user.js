@@ -47,7 +47,7 @@ userSchema.statics.checkUser = async function (email, password) {
     if (!user) {
       return Promise.reject(new UnauthorizedError('Неверная почта или пароль'));
     }
-    const match = bcrypt.compare(password, user.password);
+    const match = await bcrypt.compare(password, user.password);
 
     if (!match) {
       return Promise.reject(new UnauthorizedError('Неверная почта или пароль'));

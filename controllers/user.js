@@ -46,7 +46,7 @@ module.exports.createUser = async (req, res, next) => {
       name, about, avatar, email, password,
     } = req.body;
     const hash = await bcrypt.hash(password, 10);
-    const user = User.create({
+    const user = await User.create({
       name,
       about,
       avatar,
@@ -61,8 +61,9 @@ module.exports.createUser = async (req, res, next) => {
       next(new ConflictError('Пользователь с данным email уже зарегистрирован'));
     } else if (e.name === 'CastError') {
       next(new BadRequestError('Переданы не валидные данные'));
+    } else {
+      next(e);
     }
-    next(e);
   }
 };
 
@@ -73,9 +74,6 @@ module.exports.login = async (req, res, next) => {
     const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
     res.send(token);
   } catch (e) {
-    if (e.name === 'ValidationError') {
-      next(new BadRequestError(e.message));
-    }
     next(e);
   }
 };
@@ -95,8 +93,9 @@ module.exports.updateUserName = async (req, res, next) => {
   } catch (e) {
     if (e.name === 'ValidationError') {
       next(new BadRequestError(e.message));
+    } else {
+      next(e);
     }
-    next(e);
   }
 };
 
@@ -115,8 +114,9 @@ module.exports.updateUserAvatar = async (req, res, next) => {
   } catch (e) {
     if (e.name === 'ValidationError') {
       next(new BadRequestError(e.message));
+    } else {
+      next(e);
     }
-    next(e);
   }
 };
 
